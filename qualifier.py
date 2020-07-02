@@ -15,6 +15,9 @@ Important notes for submission:
 """
 import datetime
 import typing
+import collections
+from collections import Counter
+import re
 
 
 class ArticleField:
@@ -28,4 +31,40 @@ class Article:
     """The `Article` class you need to write for the qualifier."""
 
     def __init__(self, title: str, author: str, publication_date: datetime.datetime, content: str):
-        pass
+        self.title = title
+        self.author = author
+        self.publication_date = publication_date
+        self.content = content
+        
+    def __repr__(self):
+        return '<Article title=\"%s\" author=\'%s\' publication_date=\'%s\'>' % (self.title, self.author, self.publication_date.isoformat())
+    
+    def __len__(self):
+        return len(self.content)
+    
+    def short_introduction(self, n_characters: int):
+        shortIntro = self.content[ 0 : n_characters + 1]
+        if shortIntro[n_characters] == ' ' or shortIntro[n_characters] == '\n':
+            return shortIntro[0 : n_characters]
+        else:
+            last = max(shortIntro.rfind(" "), shortIntro.rfind("\n"))
+            return shortIntro[0 : last]
+        
+    def most_common_words(self, n_words: int):
+        summary = self.content.lower()
+        
+        summary = re.sub('[^0-9a-zA-Z]+', ' ', summary)
+        
+        wordcount = {}
+        
+        for word in summary.split():
+            if word not in wordcount.keys():
+                wordcount[word] = 1
+            else:
+                wordcount[word] += 1
+                
+        word_counter = collections.Counter(wordcount)
+        
+        return dict(word_counter.most_common(n_words))
+        
+        
