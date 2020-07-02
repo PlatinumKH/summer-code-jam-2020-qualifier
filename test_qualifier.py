@@ -1,5 +1,6 @@
 import datetime
 import importlib
+import re
 import unittest
 from unittest import mock
 
@@ -100,7 +101,7 @@ class T200IntermediateTests(unittest.TestCase):
 
         for _ in range(5):
             article = qualifier.Article(
-                title="a", author="b", content="c", publication_date=mock.Mock()
+                title="a", author="b", content="c", publication_date=mock.Mock(datetime.datetime)
             )
             articles.append(article)
 
@@ -113,7 +114,7 @@ class T200IntermediateTests(unittest.TestCase):
     def test_202_last_edited(self, local_datetime):
         """last_edited attribute should update to the current time when the content changes."""
         article = qualifier.Article(
-            title="a", author="b", content="c", publication_date=mock.Mock()
+            title="a", author="b", content="c", publication_date=mock.Mock(datetime.datetime)
         )
 
         self.assertTrue(
@@ -124,7 +125,10 @@ class T200IntermediateTests(unittest.TestCase):
         self.assertIsNone(article.last_edited, "Initial value of last_edited should be None")
 
         # Set twice to account for both "import datetime" and "from datetime import datetime"
-        side_effects = ("first datetime", "second datetime")
+        side_effects = (
+            datetime.datetime(2020, 7, 2, 15, 3, 10),
+            datetime.datetime(2020, 7, 2, 16, 3, 10),
+        )
         local_datetime.now.side_effect = side_effects
         local_datetime.datetime.now.side_effect = side_effects
 
@@ -200,22 +204,6 @@ class T300AdvancedTests(unittest.TestCase):
 
     def test_304_descriptor_type_error_message(self):
         """Should include the attribute's name, the expected type, and the received type."""
-        with self.assertRaises(TypeError) as assertion_context:
+        msg = "expected an instance of type 'int' for attribute 'attribute', got 'str' instead"
+        with self.assertRaisesRegex(TypeError, re.escape(msg)):
             self.article.attribute = "some string"
-
-        exception_message = str(assertion_context.exception)
-        self.assertIn(
-            "int",
-            exception_message,
-            msg="The exception message should include the expected type",
-        )
-        self.assertIn(
-            "attribute",
-            exception_message,
-            msg="The exception message should include the name of the attribute",
-        )
-        self.assertIn(
-            "str",
-            exception_message,
-            msg="The exception message should include the received type",
-        )
