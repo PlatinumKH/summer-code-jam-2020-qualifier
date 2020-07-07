@@ -16,8 +16,8 @@ Important notes for submission:
 import datetime
 import typing
 import collections
-from collections import Counter
 import re
+from itertools import count
 
 
 class ArticleField:
@@ -29,13 +29,27 @@ class ArticleField:
 
 class Article:
     """The `Article` class you need to write for the qualifier."""
+    _ids = count(0)
+    _queue = []
 
     def __init__(self, title: str, author: str, publication_date: datetime.datetime, content: str):
+        self.id = next(self._ids)
         self.title = title
         self.author = author
         self.publication_date = publication_date
         self.content = content
+        self.last_edited = None
         
+    def __setattr__(self, att, val):
+        if att == "content":
+            self.last_edited = datetime.datetime.now()
+            if self in self._queue: self._queue.remove(self)
+            self._queue.append(self)
+        return super().__setattr__(att, val)
+    
+    def __sorted__(self):
+        return _queue
+    
     def __repr__(self):
         return '<Article title=\"%s\" author=\'%s\' publication_date=\'%s\'>' % (self.title, self.author, self.publication_date.isoformat())
     
