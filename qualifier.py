@@ -28,10 +28,13 @@ class ArticleField:
         self.field_type = field_type
         self.data = {}
         self.name = ''
+        
+    def __set_name__(self, owner, name):
+        self.name = name
     
     def __set__(self, ins, val):
         if not isinstance(val, self.field_type):
-            raise TypeError("Wrong field type")
+            raise TypeError("expected an instance of type '%s' for attribute '%s', got '%s' instead" % (self.field_type.__name__, self.name, val.__class__.__name__))
         self.data[ins] = val
     
     def __get__(self, ins, owner=None):
