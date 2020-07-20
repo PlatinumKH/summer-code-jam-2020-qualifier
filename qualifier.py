@@ -25,7 +25,17 @@ class ArticleField:
     """The `ArticleField` class for the Advanced Requirements."""
 
     def __init__(self, field_type: typing.Type[typing.Any]):
-        pass
+        self.field_type = field_type
+        self.data = {}
+        self.name = ''
+    
+    def __set__(self, ins, val):
+        if not isinstance(val, self.field_type):
+            raise TypeError("Wrong field type")
+        self.data[ins] = val
+    
+    def __get__(self, ins, owner=None):
+        return self.data[ins]
 
 @functools.total_ordering
 class Article:
