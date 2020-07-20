@@ -18,6 +18,7 @@ import typing
 import collections
 import re
 from itertools import count
+import functools
 
 
 class ArticleField:
@@ -26,11 +27,10 @@ class ArticleField:
     def __init__(self, field_type: typing.Type[typing.Any]):
         pass
 
-
+@functools.total_ordering
 class Article:
     """The `Article` class you need to write for the qualifier."""
     _ids = count(0)
-    _queue = []
 
     def __init__(self, title: str, author: str, publication_date: datetime.datetime, content: str):
         self.id = next(self._ids)
@@ -43,12 +43,7 @@ class Article:
     def __setattr__(self, att, val):
         if att == "content":
             self.last_edited = datetime.datetime.now()
-            if self in self._queue: self._queue.remove(self)
-            self._queue.append(self)
         return super().__setattr__(att, val)
-    
-    def __sorted__(self):
-        return _queue
     
     def __repr__(self):
         return '<Article title=\"%s\" author=\'%s\' publication_date=\'%s\'>' % (self.title, self.author, self.publication_date.isoformat())
@@ -72,7 +67,7 @@ class Article:
         wordcount = {}
         
         for word in summary.split():
-            if word not in wordcount.keys():
+            if word not in wordcount:
                 wordcount[word] = 1
             else:
                 wordcount[word] += 1
@@ -80,5 +75,13 @@ class Article:
         word_counter = collections.Counter(wordcount)
         
         return dict(word_counter.most_common(n_words))
-        
+    
+    def __lt__(self, other):
+        return self.publication_date < other.publication_date
+
+    def __eq__(self, other):
+        return self.publication_date == other.publication_date
+
+    def __gt__(self, other):
+        return self.publication_date > other.publication_date
         
